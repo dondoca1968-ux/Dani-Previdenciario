@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Calculadora Dani Previdenciária</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #fde9f3, #f4f7ff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 24px 28px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    .logo {
+      font-size: 18px;
+      font-weight: 700;
+      color: #c0477f;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    h1 {
+      font-size: 20px;
+      margin: 0 0 12px 0;
+      color: #333;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #444;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid #d8d8e0;
+      font-size: 14px;
+      outline: none;
+      transition: border 0.2s, box-shadow 0.2s;
+      background-color: #fafafa;
+    }
+
+    input[type="number"]:focus {
+      border-color: #c0477f;
+      box-shadow: 0 0 0 2px rgba(192, 71, 127, 0.15);
+      background-color: #ffffff;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .hint {
+      font-size: 11px;
+      color: #888;
+      margin-top: 3px;
+    }
+
+    .constants {
+      font-size: 12px;
+      background: #f9f3f8;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin: 4px 0 14px 0;
+      color: #555;
+    }
+
+    button {
+      width: 100%;
+      border: none;
+      border-radius: 999px;
+      padding: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      background: linear-gradient(135deg, #c0477f, #e67aa5);
+      color: white;
+      margin-top: 4px;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.2s;
+      box-shadow: 0 8px 18px rgba(192, 71, 127, 0.3);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px rgba(192, 71, 127, 0.35);
+      opacity: 0.96;
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 4px 10px rgba(192, 71, 127, 0.2);
+    }
+
+    .resultado-box {
+      margin-top: 16px;
+      padding: 12px 12px 10px 12px;
+      border-radius: 14px;
+      background: #f4f8ff;
+      border: 1px solid #d5e0ff;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .resultado-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #6a75aa;
+      margin-bottom: 4px;
+    }
+
+    .resultado-valor {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1f2a5a;
+    }
+
+    .erro {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #b00020;
+    }
+
+    .rodape {
+      margin-top: 10px;
+      font-size: 11px;
+      color: #999;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">Dani Previdenciária</div>
+    <h1>Calculadora de Fator INSS</h1>
+    <div class="subtitle">
+      Cálculo: <strong>(média - teto INSS) × (numerador / 455)</strong>
+    </div>
+
+    <div class="field">
+      <label for="media">Média do servidor (R$)</label>
+      <input type="number" id="media" step="0.01" placeholder="Ex: 44183,51">
+      <div class="hint">Use vírgula ou ponto para centavos, como 44183,51 ou 44183.51.</div>
+    </div>
+
+    <div class="field">
+      <label for="numerador">Numerador do fator</label>
+      <input type="number" id="numerador" step="1" placeholder="Ex: 363">
+      <div class="hint">Esse é o valor variável do fator (o denominador é fixo: 455).</div>
+    </div>
+
+    <div class="constants">
+      <div><strong>Teto INSS (fixo):</strong> R$ 8.157,41</div>
+      <div><strong>Denominador do fator (fixo):</strong> 455</div>
+    </div>
+
+    <button type="button" onclick="calcular()">Calcular</button>
+
+    <div id="resultadoBox" class="resultado-box" style="display:none;">
+      <div class="resultado-label">Resultado do cálculo</div>
+      <div id="resultado" class="resultado-valor"></div>
+    </div>
+
+    <div id="erro" class="erro" style="display:none;"></div>
+
+    <div class="rodape">
+      Uso interno – apoio ao cálculo previdenciário.
+    </div>
+  </div>
+
+  <script>
+    function formatarMoeda(valor) {
+      return valor.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      });
+    }
+
+    function calcular() {
+      const mediaInput = document.getElementById('media').value.replace(',', '.');
+      const numeradorInput = document.getElementById('numerador').value.replace(',', '.');
+
+      const media = Number(mediaInput);
+      const numerador = Number(numeradorInput);
+
+      const teto = 8157.41;
+      const denominador = 455;
+
+      const erroEl = document.getElementById('erro');
+      const resultadoBox = document.getElementById('resultadoBox');
+      const resultadoEl = document.getElementById('resultado');
+
+      erroEl.style.display = 'none';
+      resultadoBox.style.display = 'none';
+
+      if (isNaN(media) || isNaN(numerador)) {
+        erroEl.textContent = 'Preencha corretamente a média e o numerador.';
+        erroEl.style.display = 'block';
+        return;
+      }
+
+      const base = media - teto;
+      const fator = numerador / denominador;
+      const resultado = base * fator;
+
+      resultadoEl.textContent = formatarMoeda(resultado);
+      resultadoBox.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
